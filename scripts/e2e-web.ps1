@@ -1,37 +1,22 @@
 ﻿<#
 .SYNOPSIS
-  dsh-fxxk 端到端验证：重置测试 profile → 安装 → 起宿主 → API/页面/dock 断言 → 截图 → 清理。
+  dsh-fuck 端到端验证：重置测试 profile → 安装 → 起宿主 → API/页面/按钮断言 → 截图 → 清理。
 
 .DESCRIPTION
-  覆盖 SPEC §7 的 verify 链路：
-    1. node test/check-plugin.mjs 静态体检；
-    2. test/setup-profile.mjs 重置测试 profile（--reset，幂等）；
-    3. scripts/install.ps1 安装（备份 + pnpm add + bundles）；
-    4. dsh --profile <p> --port 3099 --no-open 起宿主，从 stdout 解析 token；
-    5. GET /dsh-fxxk/api 断言 ok:true、state.breakArmor/reverse 为布尔；
-    6. 页面 HTML 断言 __DSH_BOOT__ 含 "id":"dsh-fxxk"；
-    7. POST toggle breakArmor / reverse 后 GET 断言状态、skills 挂载（9 个）、selftest 双模式文本；
-    8. 无头 Edge（CDP）两态断言：
-       - 收起态：`[data-slot="conversation.input.left"]` 里存在 dsh-fxxk 设置按钮（aria-label 含
-         「dsh-fxxk」「插件设置」），截图 test/out/e2e-dock-collapsed.png；
-       - 展开态：点击该按钮后面板挂载到 `[data-slot="conversation.input.dock"]`，断言面板含
-         「破甲」「逆向」「保存」，截图 test/out/e2e-dock.png；
-    9. finally：杀自己起的宿主进程树、恢复 $DSH_HOME/dsh-fxxk/settings.json、清 Edge 临时 profile。
-  退出码 0 = 全 PASS；1 = 有 FAIL（日志与截图仍保留在 test/out/）。
-
-  为什么用 CDP 而不是 `msedge --headless=new --screenshot`：DSH Web 是 SPA，
-  --screenshot 在 load 事件瞬间截屏，React 还没挂载 dock；--virtual-time-budget
-  又会被页面轮询/WebSocket 拖住不退出（实测卡死）。CDP 可以先等 slot 出现、
-  断言 DOM，再截屏。
+  流程：check-plugin → 重置 profile → install.ps1 → 起宿主（默认端口 3099）并解析 token
+  → GET /dsh-fuck/api → boot graph 含 dsh-fuck → toggle 破甲/逆向（含 9 个技能）→ selftest
+  → reset → 无头 Edge(CDP) 两态断言（收起态按钮在 conversation.input.left，展开态面板在
+  conversation.input.dock）→ 截图 → finally 清理进程/设置/Edge 临时目录。
+  退出码 0 = 全 PASS；1 = 有 FAIL（日志与截图保留在 test/out/）。
 
 .PARAMETER Profile
-  测试 profile 名，必填。为了不误伤真实配置，脚本拒绝 tauri / web / desktop。
-  真实 tauri 装配后用 `node test/e2e-dock.mjs <3080 token URL> <png> --expect 插件设置 --slot conversation.input.left` 验证。
+  测试 profile 名，必填。脚本拒绝 tauri / web / desktop，避免误伤真实配置。
+
+.PARAMETER NoScreenshot
+  跳过 CDP 截图与 DOM 断言（无 Edge 时使用）。
 
 .EXAMPLE
   powershell -File scripts/e2e-web.ps1 -Profile dualtest
-.EXAMPLE
-  powershell -File scripts/e2e-web.ps1 -Profile dualtest -NoReset     # 保留已有安装
 #>
 [CmdletBinding()]
 param(
@@ -44,13 +29,13 @@ param(
 
   [int]$Port = 3099,
 
-  [string]$ApiPath = '/dsh-fxxk/api',
+  [string]$ApiPath = '/dsh-fuck/api',
 
   # 新版 UI：常驻控制栏取消。设置按钮（图标按钮）注册在 conversation.input.left，
   # 点击后面板出现在 conversation.input.dock（含 破甲/逆向/保存/重置/载入）。
   [string]$LeftSlot = 'conversation.input.left',
 
-  [string[]]$LeftExpect = @('插件设置', 'dsh-fxxk'),
+  [string[]]$LeftExpect = @('插件设置', 'dsh-fuck'),
 
   [string]$Slot = 'conversation.input.dock',
 
@@ -146,7 +131,7 @@ function Stop-ProcessTree {
   }
 }
 
-# POST /dsh-fxxk/api：返回 HTTP 状态码 + 解析后的 body。
+# POST /dsh-fuck/api：返回 HTTP 状态码 + 解析后的 body。
 # 为什么不用 Invoke-RestMethod：它非 2xx 只抛异常，拿不到状态码和 {ok:false,error}
 # 文本；而逆向模式回归 bug 的表现恰好是 HTTP 500 + JSON error，必须能断言出来。
 function Invoke-ApiPost {
@@ -272,7 +257,7 @@ function Register-CdpChecks {
 $reserved = @('tauri', 'web', 'desktop')
 if ($reserved -contains $Profile) {
   Write-Fail "拒绝在真实 profile '$Profile' 上跑 e2e（本脚本会重置 profile 并起第二个宿主）。"
-  Write-Detail '真实装配后请用：node test/e2e-dock.mjs "<3080 token URL>" test/out/e2e-dock-tauri.png --slot conversation.input.left --expect 插件设置'
+  Write-Detail '真实装配后请用：node test/e2e-dock.mjs "<3080 token URL>" test/out/e2e-tauri.png --slot conversation.input.left --expect 插件设置'
   exit 1
 }
 
@@ -286,10 +271,10 @@ New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $hostOut = Join-Path $outDir ("e2e-web-{0}.out.log" -f $stamp)
 $hostErr = Join-Path $outDir ("e2e-web-{0}.err.log" -f $stamp)
-$screenshotPath = Join-Path $outDir 'e2e-dock.png'
-$collapsedScreenshotPath = Join-Path $outDir 'e2e-dock-collapsed.png'
+$screenshotPath = Join-Path $outDir 'e2e-open.png'
+$collapsedScreenshotPath = Join-Path $outDir 'e2e-collapsed.png'
 $leftJsonFile = Join-Path $outDir 'e2e-dock-left.json'
-$settingsPath = Join-Path $dshHome 'dsh-fxxk\settings.json'
+$settingsPath = Join-Path $dshHome 'dsh-fuck\settings.json'
 $settingsBackup = $null
 $settingsExisted = Test-Path -LiteralPath $settingsPath
 
@@ -338,7 +323,7 @@ try {
   if ($settingsExisted) {
     $settingsBackup = Join-Path $outDir ("e2e-settings-backup-{0}.json" -f $stamp)
     Copy-Item -LiteralPath $settingsPath -Destination $settingsBackup -Force
-    Write-Step "已备份 $DSH_HOME/dsh-fxxk/settings.json → $settingsBackup"
+    Write-Step "已备份 $DSH_HOME/dsh-fuck/settings.json → $settingsBackup"
   }
 
   # ------------------------------------------------------------ 5. 端口检查
@@ -388,19 +373,19 @@ try {
     $apiOk = [bool]$api.ok
     if ($api.state) { $stateBreak = $api.state.breakArmor; $stateReverse = $api.state.reverse }
   }
-  Add-Check 'GET /dsh-fxxk/api 返回 ok:true' $apiOk
+  Add-Check 'GET /dsh-fuck/api 返回 ok:true' $apiOk
   Add-Check 'state.breakArmor 为布尔' ($stateBreak -is [bool]) ("值=" + $stateBreak)
   Add-Check 'state.reverse 为布尔' ($stateReverse -is [bool]) ("值=" + $stateReverse)
 
   # 页面 boot graph
-  Write-Step 'GET 页面 HTML，断言 __DSH_BOOT__ 含 dsh-fxxk'
+  Write-Step 'GET 页面 HTML，断言 __DSH_BOOT__ 含 dsh-fuck'
   $page = Invoke-WebRequest -Uri $tokenUrl -UseBasicParsing -TimeoutSec 20
-  $bootOk = ($page.StatusCode -eq 200) -and ($page.Content -match '"id":"dsh-fxxk"')
+  $bootOk = ($page.StatusCode -eq 200) -and ($page.Content -match '"id":"dsh-fuck"')
   Add-Check '页面 HTTP 200' ($page.StatusCode -eq 200) ("status=" + $page.StatusCode)
-  Add-Check 'boot graph 含 dsh-fxxk（client 半侧）' $bootOk
+  Add-Check 'boot graph 含 dsh-fuck（client 半侧）' $bootOk
 
   # ------------------------------------------------------------ 8. 基线归零
-  # $DSH_HOME/dsh-fxxk/settings.json 与 tauri/真实 GUI 共用，可能带着历史状态
+  # $DSH_HOME/dsh-fuck/settings.json 与 tauri/真实 GUI 共用，可能带着历史状态
   # （实测上一轮 tauri 测试留下 breakArmor=true）。先 reset 让后续断言确定成立；
   # finally 会恢复 e2e 开始前的 settings.json（或删除测试前不存在的）。
   Write-Step '基线 reset（消除历史 settings.json 状态影响）'
@@ -462,7 +447,7 @@ try {
     $selftest = $selftestResponse.selftest
     $headText = ''
     if ($selftest -and $selftest.sectionHead) { $headText = [string]$selftest.sectionHead }
-    $headPrefixed = $headText.StartsWith('## 插件设置面板（dsh-fxxk）')
+    $headPrefixed = $headText.StartsWith('## 插件设置面板（dsh-fuck）')
     $hasBreakOn = $headText.Contains('破甲模式=开')
     $hasReverseOn = $headText.Contains('逆向模式=开')
     $noError = $true
@@ -519,7 +504,7 @@ try {
     # 预览版说明弹窗会盖住 composer：先点掉「继续」。
     $dismissPreEval = "(()=>{const b=[...document.querySelectorAll('button')].find(x=>x.textContent.trim()==='继续');if(b)b.click();return 'done'})()"
 
-    # ---- 10a. 收起态：input.left 里应存在 dsh-fxxk 设置按钮（图标按钮，aria-label 含关键词）
+    # ---- 10a. 收起态：input.left 里应存在 dsh-fuck 设置按钮（图标按钮，aria-label 含关键词）
     Write-Step ("收起态：断言 slot=" + $LeftSlot + " 含设置按钮（" + ($LeftExpect -join ' / ') + "）并截图")
     $collapsedCdp = Invoke-CdpCheck -CdpScript $cdpScript -Url $tokenUrl -PngPath $collapsedScreenshotPath `
       -JsonPath $leftJsonFile -SlotName $LeftSlot -ExpectTexts $LeftExpect -PreEval $dismissPreEval
@@ -528,7 +513,7 @@ try {
     # ---- 10b. 展开态：点按钮 → input.dock 面板出现并含 破甲/逆向/保存，截图保留展开状态
     # pre-eval 里先轮询等按钮渲染（最多 ~10s）再 click；e2e-dock 点击后还会等 slot 出现
     # 并额外 sleep 1.2s（> 要求的 ~800ms），足够面板完成挂载。
-    Write-Step ("展开态：点击 " + $LeftSlot + " 的 dsh-fxxk 按钮 → 断言 " + $Slot + " 面板含 " + ($Expect -join ' / ') + " 并截图")
+    Write-Step ("展开态：点击 " + $LeftSlot + " 的 dsh-fuck 按钮 → 断言 " + $Slot + " 面板含 " + ($Expect -join ' / ') + " 并截图")
     $clickPreEvalFile = Join-Path $outDir 'e2e-click-preeval.js'
     $clickPreEvalSource = @'
 (async () => {
@@ -540,7 +525,7 @@ try {
   const findSettingsButton = () => [...document.querySelectorAll('[aria-label]')].find((el) => {
     const label = el.getAttribute('aria-label') || '';
     const title = el.getAttribute('title') || '';
-    return label.includes('dsh-fxxk') || label.includes('插件设置') || title.includes('插件设置') || title.includes('dsh-fxxk');
+    return label.includes('dsh-fuck') || label.includes('插件设置') || title.includes('插件设置') || title.includes('dsh-fuck');
   });
   for (let i = 0; i < 40; i += 1) {
     dismiss();

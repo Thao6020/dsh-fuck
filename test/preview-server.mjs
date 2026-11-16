@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * dsh-fxxk 预览服务器。
+ * dsh-fuck 预览服务器。
  *
  * 作用：不启动真实 DSH 宿主，也能用无头 Edge 截图 / 手工检查 dock UI。
  *   1. 静态服务 test/out：/dock-collapsed.html（首页默认，工具条只有小图标按钮）、
  *      /dock-open.html（设置面板展开）、旧别名 /preview.html、/preview-default.html。
- *   2. mock 掉 GET/POST /dsh-fxxk/api：内存状态，支持 set / toggle / reset / reload，
+ *   2. mock 掉 GET/POST /dsh-fuck/api：内存状态，支持 set / toggle / reset / reload，
  *      响应形状与宿主 lib/api.js 的契约一致（{ok,state,meta}）。
  *
  * 运行：node test/preview-server.mjs
  *       node test/preview-server.mjs --selftest   # 起服务→自测接口→退出（CI 用）
- * 端口：默认 127.0.0.1:3097，可用 DSH_FXXK_PREVIEW_PORT 覆盖。
+ * 端口：默认 127.0.0.1:3097，可用 DSH_FUCK_PREVIEW_PORT 覆盖。
  */
 import http from 'node:http'
 import fs from 'node:fs'
@@ -20,8 +20,8 @@ import { fileURLToPath } from 'node:url'
 const here = path.dirname(fileURLToPath(import.meta.url))
 const outDir = path.join(here, 'out')
 const HOST = '127.0.0.1'
-const PORT = Number(process.env.DSH_FXXK_PREVIEW_PORT || 3097)
-const API_PATH = '/dsh-fxxk/api'
+const PORT = Number(process.env.DSH_FUCK_PREVIEW_PORT || 3097)
+const API_PATH = '/dsh-fuck/api'
 const MAX_BODY_BYTES = 64 * 1024
 
 /* ---------------------------------------------------------------- 状态 */
@@ -273,7 +273,7 @@ function startServer() {
   return new Promise((resolve, reject) => {
     server.once('error', reject)
     server.listen(PORT, HOST, () => {
-      console.log('[dsh-fxxk] 预览服务器已启动')
+      console.log('[dsh-fuck] 预览服务器已启动')
       console.log(`  收起态   : http://${HOST}:${PORT}/dock-collapsed.html`)
       console.log(`  展开态   : http://${HOST}:${PORT}/dock-open.html`)
       console.log(`  首页     : http://${HOST}:${PORT}/（= 收起态）`)
@@ -311,7 +311,7 @@ async function selftest() {
   }
 
   try {
-    await check('GET /dsh-fxxk/api 返回 ok=true + state + meta', async () => {
+    await check('GET /dsh-fuck/api 返回 ok=true + state + meta', async () => {
       const response = await fetch(`${base}${API_PATH}`)
       assert(response.ok, `HTTP ${response.status}`)
       const data = await response.json()
@@ -385,10 +385,10 @@ async function selftest() {
       const response = await fetch(`${base}/`)
       assert(response.ok, `HTTP ${response.status}`)
       const html = await response.text()
-      assert(html.includes('data-dsh-fxxk') && html.includes('dshf-trigger'), '页面缺少样式或小按钮')
+      assert(html.includes('data-dsh-fuck') && html.includes('dshfk-trigger'), '页面缺少样式或小按钮')
       assert(html.includes('data-slot="conversation.input.left"'), '页面缺少 input.left outlet')
       assert(html.includes('data-slot="conversation.input.dock"'), '页面缺少 input.dock outlet')
-      assert(!html.includes('data-dsh-fxxk-panel'), '收起态不应渲染设置面板')
+      assert(!html.includes('data-dsh-fuck-panel'), '收起态不应渲染设置面板')
       assert(!html.includes('双模式'), '页面不应再出现「双模式」')
     })
 
@@ -396,8 +396,8 @@ async function selftest() {
       const response = await fetch(`${base}/dock-open.html`)
       assert(response.ok, `HTTP ${response.status}`)
       const html = await response.text()
-      assert(html.includes('dshf-panel') && html.includes('插件设置'), '展开态缺少设置面板')
-      assert(html.includes('dshf-trigger'), '展开态缺少工具条小按钮')
+      assert(html.includes('dshfk-panel') && html.includes('插件设置'), '展开态缺少设置面板')
+      assert(html.includes('dshfk-trigger'), '展开态缺少工具条小按钮')
       assert(html.includes('保存') && html.includes('重新载入'), '展开态缺少操作按钮')
     })
 
@@ -405,7 +405,7 @@ async function selftest() {
       const response = await fetch(`${base}/preview-default.html`)
       assert(response.ok, `HTTP ${response.status}`)
       const html = await response.text()
-      assert(html.includes('dshf-trigger'), '页面缺少小按钮')
+      assert(html.includes('dshfk-trigger'), '页面缺少小按钮')
     })
 
     await check('目录穿越被拒绝', async () => {
@@ -423,12 +423,12 @@ async function selftest() {
 
   console.log('')
   if (failures.length > 0) {
-    console.error(`[dsh-fxxk] preview-server 自检 FAIL：${failures.length} 项失败`)
+    console.error(`[dsh-fuck] preview-server 自检 FAIL：${failures.length} 项失败`)
     for (const failure of failures) console.error(`  - ${failure}`)
     process.exitCode = 1
     return
   }
-  console.log('[dsh-fxxk] preview-server 自检 PASS')
+  console.log('[dsh-fuck] preview-server 自检 PASS')
 }
 
 /* --------------------------------------------------------------- 启动 */
@@ -441,7 +441,7 @@ if (process.argv.includes('--selftest')) {
 } else {
   startServer().catch((error) => {
     if (error && error.code === 'EADDRINUSE') {
-      console.error(`[dsh-fxxk] 端口 ${PORT} 已被占用。先关掉旧进程，或设置 DSH_FXXK_PREVIEW_PORT 换端口。`)
+      console.error(`[dsh-fuck] 端口 ${PORT} 已被占用。先关掉旧进程，或设置 DSH_FUCK_PREVIEW_PORT 换端口。`)
     } else {
       console.error(error)
     }

@@ -1,32 +1,20 @@
 ﻿<#
 .SYNOPSIS
-  从指定 DSH profile 卸载 dsh-fxxk（移除 bundles 选择 + pnpm 依赖），可选恢复安装前备份。
+  从指定 DSH profile 卸载 dsh-fuck（移除 bundles 选择 + 依赖），可选恢复安装前备份。
 
 .DESCRIPTION
-  卸载顺序刻意是「先备份当前状态 → 再移除 bundles 选择 → 再 pnpm remove」：
-    - bundles 决定宿主是否加载插件；只 pnpm remove 而留着 bundles，宿主会报
-      「entry did not activate / 找不到包」，所以必须先改 package.json。
-    - 先备份当前 profile 清单，卸载本身也可逆（备份目录会打印出来）。
-    - `-RestoreBackup` 直接用安装时留下的 .dsh-fxxk-backup/<stamp> 覆盖回
-      package.json / pnpm-lock.yaml / cordis.patch.yml，再 pnpm install 同步
-      node_modules（等价于「回到安装前」）。
-  用户设置文件 $DSH_HOME/dsh-fxxk/settings.json 不会被删除（重装不丢状态是产品约定）；
-  需要清空请手动删。
+  顺序是「先备份 → 再移除 bundles → 再 remove」：bundles 决定宿主是否加载插件，先 pnpm remove 会留下坏条目。
+  用户设置 $DSH_HOME/dsh-fuck/settings.json 不会被删除。
 
 .PARAMETER Profile
-  目标 profile 名，必填、无默认值（绝不能默认落到 tauri 上）。
+  目标 profile 名，必填无默认值。
 
 .PARAMETER RestoreBackup
-  安装备份目录路径（.dsh-fxxk-backup/<stamp>），提供时走「恢复备份」而不是普通卸载。
+  安装备份目录路径（.dsh-fuck-backup/<stamp>／.dsh-fxxk-backup／.dsh-dual-backup 均可）。
 
 .PARAMETER RestoreLatest
-  使用该 profile 下最新的 .dsh-fxxk-backup/<stamp>/install.json 备份。
+  使用该 profile 下最新的 install.json 备份。
 
-.PARAMETER KeepDependency
-  只移除 bundles 选择，保留 package.json 依赖（罕见；调试用）。
-
-.EXAMPLE
-  powershell -File scripts/uninstall.ps1 -Profile dualtest
 .EXAMPLE
   powershell -File scripts/uninstall.ps1 -Profile tauri -RestoreLatest
 #>
@@ -39,7 +27,7 @@ param(
 
   [string]$Node,
 
-  [string]$PluginName = 'dsh-fxxk',
+  [string]$PluginName = 'dsh-fuck',
 
   [string]$RestoreBackup,
 
@@ -114,7 +102,7 @@ if (changed) manifest.dsh.profile.bundles = next
 fs.writeFileSync(file, JSON.stringify(manifest, null, 2) + '\n')
 process.stdout.write(changed ? 'removed' : 'absent')
 '@
-  $tempScript = Join-Path ([System.IO.Path]::GetTempPath()) ("dsh-fxxk-unbundles-{0}.js" -f ([System.Guid]::NewGuid().ToString('N')))
+  $tempScript = Join-Path ([System.IO.Path]::GetTempPath()) ("dsh-fuck-unbundles-{0}.js" -f ([System.Guid]::NewGuid().ToString('N')))
   try {
     [System.IO.File]::WriteAllText($tempScript, $script, (New-Object System.Text.UTF8Encoding($false)))
     $output = & $NodePath $tempScript $ManifestPath $PackageName 2>&1
@@ -167,7 +155,7 @@ Write-Step "dsh      : $dsh"
 if (-not (Test-Path -LiteralPath $profileDir)) { throw "profile 不存在：$profileDir" }
 if (-not (Test-Path -LiteralPath $manifestPath)) { throw "profile 缺 package.json：$manifestPath" }
 
-$backupRoot = Join-Path $profileDir '.dsh-fxxk-backup'
+$backupRoot = Join-Path $profileDir '.dsh-fuck-backup'
 
 # ---------------------------------------------------------------- 分支：恢复备份
 $restoreDir = $null
@@ -268,7 +256,7 @@ if ($removedDependency -and -not $stillDependency) {
   Write-Host ''
   Write-Ok "UNINSTALL PASS  profile=$Profile  package=$PluginName"
   Write-Detail "卸载前备份：$backupDir"
-  Write-Detail '用户设置 $DSH_HOME/dsh-fxxk/settings.json 保留（重装不丢）。'
+  Write-Detail '用户设置 $DSH_HOME/dsh-fuck/settings.json 保留（重装不丢）。'
   Write-Detail '宿主重启 / 刷新页面后 dock 消失。'
   exit 0
 }

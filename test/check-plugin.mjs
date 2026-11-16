@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * dsh-fxxk 插件静态体检 —— verify 用（SPEC §3 / §7）。
+ * dsh-fuck 插件静态体检 —— verify 用（SPEC §3 / §7）。
  *
  * 为什么不用 YAML 库解析 cordis.patch.yml：插件不允许引入 npm 依赖，宿主 profile
  * 的 patch 语法又只用到很小的子集（insert 列表 + id/name）。这里用纯文本断言
@@ -130,7 +130,7 @@ async function main() {
 
   const packageName = manifest?.name
   if (manifest) {
-    add('name 为 dsh-fxxk', manifest.name === 'dsh-fxxk', String(manifest.name))
+    add('name 为 dsh-fuck', manifest.name === 'dsh-fuck', String(manifest.name))
     add('version 存在', typeof manifest.version === 'string' && manifest.version.length > 0, String(manifest.version))
     add('type=module', manifest.type === 'module', String(manifest.type))
     add('exports["."] 指向 index.js', manifest.exports?.['.'] === './index.js', String(manifest.exports?.['.']))
@@ -187,17 +187,17 @@ async function main() {
     add('client.js 注册 conversation.input.dock', /conversation\.input\.dock/.test(clientText))
     // 新版 UI：设置按钮在 conversation.input.left（工具条），面板在 input.dock。
     add('client.js 注册 conversation.input.left（设置按钮）', /conversation\.input\.left/.test(clientText))
-    add('client.js 设置按钮 aria-label 含 dsh-fxxk/插件设置',
-      /aria-label['"]?\s*:\s*['"][^'"]*(?:dsh-fxxk|插件设置)/.test(clientText))
+    add('client.js 设置按钮 aria-label 含 dsh-fuck/插件设置',
+      /aria-label['"]?\s*:\s*['"][^'"]*(?:dsh-fuck|插件设置)/.test(clientText))
     add('client.js 不使用无 outlet 的 composer.dock',
       !/ctx\.slots\.inject\(\s*['"]conversation\.composer\.dock['"]/.test(clientText))
-    add('client.js 注入 <style data-dsh-fxxk>', /data-dsh-fxxk/.test(clientText))
+    add('client.js 注入 <style data-dsh-fuck>', /data-dsh-fuck/.test(clientText))
   }
 
   // ---- 宿主 API 路径 -----------------------------------------------------
   const apiFiles = [join(root, 'lib', 'api.js'), join(root, 'index.js')].filter(existsFile)
   const apiText = apiFiles.map((file) => readFileSync(file, 'utf8')).join('\n')
-  add('宿主注册 /dsh-fxxk/api 路由', /\/dsh-fxxk\/api/.test(apiText))
+  add('宿主注册 /dsh-fuck/api 路由', /\/dsh-fuck\/api/.test(apiText))
   add('宿主注册 systemPrompt section', /systemPrompt\.section/.test(readFileSync(join(root, 'index.js'), 'utf8')))
 
   // ---- prompts -----------------------------------------------------------

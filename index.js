@@ -1,10 +1,10 @@
 /**
- * dsh-fxxk — 宿主半侧入口。
+ * dsh-fuck — 宿主半侧入口。
  *
  * 职责（SPEC 第 4 节）：
- *   1. 读写 $DSH_HOME/dsh-fxxk/settings.json（lib/settings.js）
- *   2. 注册 `dsh-fxxk:modes` systemPrompt section，按当前开关动态注入提示词
- *   3. 注册 /dsh-fxxk/api，供会话内 dock 读取 / 切换状态
+ *   1. 读写 $DSH_HOME/dsh-fuck/settings.json（lib/settings.js）
+ *   2. 注册 `dsh-fuck:modes` systemPrompt section，按当前开关动态注入提示词
+ *   3. 注册 /dsh-fuck/api，供会话内 dock 读取 / 切换状态
  *   4. 逆向模式打开时把 skills/ 里的技能注册进 ctx.skills，关闭即卸载
  *   5. `/dual` 命令（可选服务，缺失则跳过）
  *
@@ -19,7 +19,7 @@ import * as prompts from './lib/prompts.js'
 import * as skills from './lib/skills.js'
 import * as api from './lib/api.js'
 
-export const name = 'dsh-fxxk'
+export const name = 'dsh-fuck'
 
 /**
  * 必需服务：提示词注入与 HTTP 路由。
@@ -54,7 +54,7 @@ export function apply(ctx, config = {}) {
   const skillsState = skills.emptySkillsState()
   let skillsCtx = null
 
-  if (!assets.ok) log.warn(`[dsh-fxxk] 提示词文件未就绪（${assets.missing.join(', ') || assets.errors.join('; ')}），注入会走降级文本`)
+  if (!assets.ok) log.warn(`[dsh-fuck] 提示词文件未就绪（${assets.missing.join(', ') || assets.errors.join('; ')}），注入会走降级文本`)
 
   // ---- 状态读取 / 变更 ----------------------------------------------------
 
@@ -78,7 +78,7 @@ export function apply(ctx, config = {}) {
       return prompts.buildPromptText(state, assets)
     } catch (error) {
       // assemble 期间抛错会让整轮模型请求失败，这里必须兜住
-      log.warn(`[dsh-fxxk] 拼装提示词失败：${errorMessage(error)}`)
+      log.warn(`[dsh-fuck] 拼装提示词失败：${errorMessage(error)}`)
       return ''
     }
   }
@@ -114,7 +114,7 @@ export function apply(ctx, config = {}) {
       })
     } catch (error) {
       // 兜底：技能同步绝不允许打断设置保存 / API 响应
-      log.warn(`[dsh-fxxk] 同步技能失败（已降级为未挂载）：${errorMessage(error)}`)
+      log.warn(`[dsh-fuck] 同步技能失败（已降级为未挂载）：${errorMessage(error)}`)
       return { mounted: false, count: 0, serviceReady: false, changed: false, reason: 'sync-error' }
     }
   }
@@ -127,7 +127,7 @@ export function apply(ctx, config = {}) {
     } catch (error) {
       // 写盘失败只降级为内存态：用户刚点的开关至少在当前进程里生效
       saved = false
-      log.warn(`[dsh-fxxk] 保存设置失败：${errorMessage(error)}`)
+      log.warn(`[dsh-fuck] 保存设置失败：${errorMessage(error)}`)
     }
     // 状态已经落盘；技能同步是附属能力，失败只 warn，不能把 API 变成 500
     syncMounted()
@@ -145,7 +145,7 @@ export function apply(ctx, config = {}) {
 
   /**
    * 真实宿主内自检：调用一次 `ctx.systemPrompt.assemble()`，确认本插件注册的
-   * `dsh-fxxk:modes` section 真的进了 assembly。
+   * `dsh-fuck:modes` section 真的进了 assembly。
    *
    * 为什么必须自己 catch：这个接口是给最终验证用的，assemble 受会话/预设/其他
    * 插件影响，任何异常都只能变成 `error` 字段，不能把宿主或验证脚本带崩。
@@ -165,7 +165,7 @@ export function apply(ctx, config = {}) {
       }
       const assembly = await promptService.assemble()
       const sections = Array.isArray(assembly && assembly.sections) ? assembly.sections : []
-      const own = sections.find((section) => section && section.name === 'dsh-fxxk:modes')
+      const own = sections.find((section) => section && section.name === 'dsh-fuck:modes')
       const sectionText = own && typeof own.text === 'string' ? own.text : ''
       // promptChars 近似整份系统提示词：sections 原文按 renderPrompt 的规则用空行拼接。
       // 真正的 renderPrompt 还会对其他 section 做变量插值，这里只求数量级证据。
@@ -204,14 +204,14 @@ export function apply(ctx, config = {}) {
       syncMounted()
       return { state, meta: currentMeta() }
     },
-    // 真实宿主内自检（/dsh-fxxk/api?selftest=1 或 {op:'selftest'}）
+    // 真实宿主内自检（/dsh-fuck/api?selftest=1 或 {op:'selftest'}）
     selftest: async () => runSelfTest(),
   }
 
   // ---- systemPrompt section ----------------------------------------------
 
   ctx.effect(() => ctx.systemPrompt.section({
-    name: 'dsh-fxxk:modes',
+    name: 'dsh-fuck:modes',
     order: 5100,
     // 人格正文里可能出现 {{...}}，不能被宿主的变量插值解释
     interpolate: false,
@@ -258,7 +258,7 @@ export function apply(ctx, config = {}) {
     skills.disposeMounted(skillsState)
     skillsCtx = null
     if (active && active.ctx === ctx) active = null
-    log.info('[dsh-fxxk] unmounted')
+    log.info('[dsh-fuck] unmounted')
   })
 
   const runtime = {
@@ -286,7 +286,7 @@ export function apply(ctx, config = {}) {
       `输出语言：${state.language === 'zh' ? '中文' : state.language === 'en' ? 'English' : '跟随用户'}`,
       `称呼：${state.userName}（每句加称呼=${state.addressEverySentence ? '是' : '否'}）`,
       `逆向技能：${mountedText}`,
-      '设置文件：$DSH_HOME/dsh-fxxk/settings.json',
+      '设置文件：$DSH_HOME/dsh-fuck/settings.json',
     ].join('\n')
   }
 
@@ -319,7 +319,7 @@ export function apply(ctx, config = {}) {
     }
   }
 
-  log.info(`[dsh-fxxk] mounted (breakArmor=${state.breakArmor}, reverse=${state.reverse}, skills=${skillsState.mounted.length})`)
+  log.info(`[dsh-fuck] mounted (breakArmor=${state.breakArmor}, reverse=${state.reverse}, skills=${skillsState.mounted.length})`)
 }
 
 /** 安装可选服务注入；回调返回值作为清理函数绑定到该 fiber 上。 */
@@ -334,11 +334,11 @@ function installOptional(ctx, services, body, log) {
         }
       } catch (error) {
         // 可选服务（skills/commands）装配失败不应让宿主崩溃，只记一条日志
-        log.warn(`[dsh-fxxk] 可选服务 ${services.join(',')} 装配失败：${errorMessage(error)}`)
+        log.warn(`[dsh-fuck] 可选服务 ${services.join(',')} 装配失败：${errorMessage(error)}`)
       }
     })
   } catch (error) {
-    log.warn(`[dsh-fxxk] 注入可选服务 ${services.join(',')} 失败：${errorMessage(error)}`)
+    log.warn(`[dsh-fuck] 注入可选服务 ${services.join(',')} 失败：${errorMessage(error)}`)
   }
 }
 
@@ -346,7 +346,7 @@ function installOptional(ctx, services, body, log) {
 function createLogger(ctx) {
   let logger = null
   try {
-    logger = ctx && typeof ctx.logger === 'function' ? ctx.logger('dsh-fxxk') : null
+    logger = ctx && typeof ctx.logger === 'function' ? ctx.logger('dsh-fuck') : null
   } catch {
     logger = null
   }

@@ -1,5 +1,5 @@
 /**
- * dsh-fxxk —— 浏览器半侧（手写 client bundle，无构建、无外部依赖）。
+ * dsh-fuck —— 浏览器半侧（手写 client bundle，无构建、无外部依赖）。
  *
  * 形态与宿主外壳一致：window.__ModuleLoader__.load({ id, factory })。
  * 只从浏览器模块表取 react；不 import 任何 DSH Client 包，所以这里没有
@@ -13,27 +13,27 @@
  *   3. 两个组件共享模块级 store（getSnapshot/subscribe/setState），open 状态与宿主数据
  *      只有一份，按钮的 aria-expanded 与面板的显示永远同步。
  *
- * 数据：GET / POST 相对路径 /dsh-fxxk/api；2000ms 轮询（页面隐藏时跳过）、
+ * 数据：GET / POST 相对路径 /dsh-fuck/api；2000ms 轮询（页面隐藏时跳过）、
  * visibilitychange 立即刷新；乐观更新 + 失败回滚；错误提示。
- * 预览钩子：window.__DSH_FXXK_PREVIEW__ 存在时直接用它做初始状态，不 fetch、不轮询。
- * 约定：所有 class 都带 dshf- 前缀；颜色只用 var(--dsw-alias-*, fallback)；
+ * 预览钩子：window.__DSH_FUCK_PREVIEW__ 存在时直接用它做初始状态，不 fetch、不轮询。
+ * 约定：所有 class 都带 dshfk- 前缀；颜色只用 var(--dsw-alias-*, fallback)；
  * 面板禁止 fixed/sticky 定位；组件内部任何 fetch 都 try/catch，失败不清空已有状态。
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-fxxk',
+  id: 'dsh-fuck',
   factory(require) {
     const React = require('react')
     const h = React.createElement
 
     /* ------------------------------------------------------------ 常量 */
 
-    const API_PATH = '/dsh-fxxk/api'
+    const API_PATH = '/dsh-fuck/api'
     const POLL_INTERVAL_MS = 2000
     const USER_NAME_MAX = 40
     const CUSTOM_MAX = 4000
     const TOOL_PATH_MAX = 500
     const STATUS_CLEAR_MS = 4000
-    const PANEL_ID = 'dshf-settings-panel'
+    const PANEL_ID = 'dshfk-settings-panel'
 
     /** 与宿主 lib/settings.js 的 DEFAULTS 保持一致的客户端副本（防 GET 失败时白屏）。 */
     const DEFAULTS = Object.freeze({
@@ -111,11 +111,11 @@ window.__ModuleLoader__.load({
       }
     }
 
-    /** 提取预览数据；生产环境返回 null（window.__DSH_FXXK_PREVIEW__ undefined）。 */
+    /** 提取预览数据；生产环境返回 null（window.__DSH_FUCK_PREVIEW__ undefined）。 */
     function readPreview() {
       try {
         if (typeof window === 'undefined') return null
-        const value = window.__DSH_FXXK_PREVIEW__
+        const value = window.__DSH_FUCK_PREVIEW__
         return value && typeof value === 'object' ? value : null
       } catch {
         return null
@@ -160,73 +160,73 @@ window.__ModuleLoader__.load({
     /* ------------------------------------------------------------ 样式 */
 
     /*
-     * 只允许 .dshf- 前缀的选择器（避免污染宿主），颜色全部走主题 token。
+     * 只允许 .dshfk- 前缀的选择器（避免污染宿主），颜色全部走主题 token。
      * 面板在文档流内展开：这里刻意不含任何 position:fixed/sticky ——
      * conversation.input.dock 位于 composer 内部（fixed 后代的包含块），
      * fixed 面板会被输入框裁切，所以只能顺流向下撑开。
      */
     const CSS = `
-.dshf-trigger{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;box-sizing:border-box;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--dsw-alias-label-secondary,#61666b);font-family:inherit;font-size:14px;line-height:1;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease}
-.dshf-trigger:hover{background:var(--dsw-alias-interactive-bg-hover,#2631480f);color:var(--dsw-alias-label-primary,#0f1115)}
-.dshf-trigger:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4176e6);outline-offset:1px}
-.dshf-trigger-on{color:var(--dsw-alias-brand-primary,#0f1115)}
-.dshf-trigger-open{border-color:var(--dsw-alias-border-l2,#0000001a);background:var(--dsw-alias-interactive-bg-active,#2631481a)}
-.dshf-trigger-icon{display:block;transform:translateY(-0.5px)}
-.dshf-trigger-dot{position:absolute;right:2px;bottom:2px;width:5px;height:5px;border-radius:50%;background:var(--dsw-alias-state-success-primary,#22c55e);box-shadow:0 0 0 1.5px var(--dsw-alias-bg-layer-1,#fff)}
-.dshf-trigger-err .dshf-trigger-dot{background:var(--dsw-alias-state-error-primary,#ec1313)}
-.dshf-panel{display:flex;flex-direction:column;gap:10px;width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--dsw-alias-border-l1,#0000000a);border-radius:12px;background:var(--dsw-alias-bg-layer-1,#fff);box-shadow:0 1px 2px rgba(0,0,0,.04);color:var(--dsw-alias-label-primary,#1f2329);font-size:13px;line-height:1.5;font-family:inherit;text-align:left}
-.dshf-panel *{box-sizing:border-box}
-.dshf-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.dshf-head-title{font-size:12px;line-height:18px;font-weight:600;color:var(--dsw-alias-label-primary,#0f1115);user-select:none}
-.dshf-head-tag{font-size:11px;line-height:16px;padding:1px 6px;border-radius:999px;border:1px solid var(--dsw-alias-border-l2,#0000001a);color:var(--dsw-alias-label-tertiary,#81858c);font-family:Consolas,"Cascadia Mono",monospace;user-select:none}
-.dshf-grow{flex:1 1 auto;min-width:4px}
-.dshf-close{appearance:none;-webkit-appearance:none;font-family:inherit;font-size:12px;line-height:18px;padding:1px 9px;border-radius:8px;border:1px solid var(--dsw-alias-border-l1,#0000000a);background:transparent;color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;white-space:nowrap}
-.dshf-close:hover{background:var(--dsw-alias-interactive-bg-hover,#2631480f);color:var(--dsw-alias-label-primary,#0f1115)}
-.dshf-close:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4176e6);outline-offset:1px}
-.dshf-chip{appearance:none;-webkit-appearance:none;font-family:inherit;font-size:12px;line-height:18px;padding:2px 12px;border-radius:999px;border:1px solid var(--dsw-alias-border-l2,#0000001a);background:var(--dsw-alias-bg-layer-2,transparent);color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;user-select:none;white-space:nowrap;transition:background .15s ease,border-color .15s ease,color .15s ease}
-.dshf-chip:hover{border-color:var(--dsw-alias-border-l3,#0000001f);color:var(--dsw-alias-label-primary,#0f1115)}
-.dshf-chip:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4176e6);outline-offset:1px}
-.dshf-chip-on,.dshf-chip-on:hover{background:var(--dsw-alias-brand-primary,#0f1115);border-color:var(--dsw-alias-brand-primary,#0f1115);color:var(--dsw-alias-label-primary-foreground,#fff);font-weight:500}
-.dshf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 14px;align-items:start}
-.dshf-field{display:flex;flex-direction:column;gap:4px;min-width:0}
-.dshf-field-label{font-size:12px;line-height:16px;color:var(--dsw-alias-label-tertiary,#81858c);user-select:none}
-.dshf-input{width:100%;min-width:0;font-family:inherit;font-size:12px;line-height:18px;padding:5px 8px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2,#0000001a);background:var(--dsw-alias-bg-layer-2,#fff);color:var(--dsw-alias-label-primary,#0f1115);outline:none}
-.dshf-input::placeholder{color:var(--dsw-alias-label-caption,#adb2b8)}
-.dshf-input:focus{border-color:var(--dsw-alias-state-business-primary,#4176e6);box-shadow:0 0 0 2px color-mix(in srgb,var(--dsw-alias-state-business-primary,#4176e6) 18%,transparent)}
-.dshf-textarea{width:100%;min-width:0;min-height:56px;font-family:inherit;font-size:12px;line-height:18px;padding:6px 8px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2,#0000001a);background:var(--dsw-alias-bg-layer-2,#fff);color:var(--dsw-alias-label-primary,#0f1115);outline:none;resize:vertical}
-.dshf-textarea::placeholder{color:var(--dsw-alias-label-caption,#adb2b8)}
-.dshf-textarea:focus{border-color:var(--dsw-alias-state-business-primary,#4176e6);box-shadow:0 0 0 2px color-mix(in srgb,var(--dsw-alias-state-business-primary,#4176e6) 18%,transparent)}
-.dshf-check{display:inline-flex;align-items:center;gap:8px;min-height:28px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;user-select:none}
-.dshf-checkbox{flex:none;width:14px;height:14px;margin:0;accent-color:var(--dsw-alias-brand-primary,#0f1115);cursor:pointer}
-.dshf-seg{display:inline-flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--dsw-alias-border-l2,#0000001a);border-radius:999px;background:var(--dsw-alias-bg-layer-2,transparent);align-self:flex-start}
-.dshf-seg-btn{appearance:none;-webkit-appearance:none;font-family:inherit;font-size:12px;line-height:16px;padding:2px 10px;border:0;border-radius:999px;background:transparent;color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;white-space:nowrap}
-.dshf-seg-btn:hover{color:var(--dsw-alias-label-primary,#0f1115)}
-.dshf-seg-btn:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4176e6);outline-offset:1px}
-.dshf-seg-btn-on,.dshf-seg-btn-on:hover{background:var(--dsw-alias-interactive-bg-active,#2631481a);color:var(--dsw-alias-label-primary,#0f1115);font-weight:500}
-.dshf-collapse{border:1px solid var(--dsw-alias-border-l1,#0000000a);border-radius:8px;padding:6px 10px;background:var(--dsw-alias-bg-layer-1,transparent)}
-.dshf-collapse[open]{padding-bottom:8px}
-.dshf-summary{display:flex;align-items:center;gap:6px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;user-select:none;list-style:none}
-.dshf-summary::-webkit-details-marker{display:none}
-.dshf-summary::before{content:'\\25B8';flex:none;font-size:10px;line-height:18px;color:var(--dsw-alias-label-caption,#adb2b8);transition:transform .15s ease}
-.dshf-collapse[open]>.dshf-summary::before{transform:rotate(90deg)}
-.dshf-collapse[open]>.dshf-summary{color:var(--dsw-alias-label-primary,#0f1115)}
-.dshf-body{margin-top:6px}
-.dshf-tools{display:flex;flex-direction:column;gap:6px;min-width:0;margin:0;padding:0;border:0}
-.dshf-legend{padding:0;font-size:12px;line-height:16px;color:var(--dsw-alias-label-tertiary,#81858c)}
-.dshf-tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 12px}
-.dshf-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--dsw-alias-border-l1,#0000000a)}
-.dshf-btn{appearance:none;-webkit-appearance:none;font-family:inherit;font-size:12px;line-height:18px;padding:4px 14px;border-radius:8px;border:1px solid var(--dsw-alias-border-l1,#0000000a);background:transparent;color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;white-space:nowrap;transition:background .15s ease,color .15s ease,border-color .15s ease}
-.dshf-btn:hover{background:var(--dsw-alias-interactive-bg-hover,#2631480f);color:var(--dsw-alias-label-primary,#0f1115)}
-.dshf-btn:active{background:var(--dsw-alias-interactive-bg-active,#2631481a)}
-.dshf-btn:disabled{opacity:.5;cursor:default}
-.dshf-btn:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4176e6);outline-offset:1px}
-.dshf-btn-primary,.dshf-btn-primary:hover{background:var(--dsw-alias-button-primary-fill,#0f1115);border-color:var(--dsw-alias-button-primary-fill,#0f1115);color:var(--dsw-alias-label-primary-foreground,#fff);font-weight:500}
-.dshf-btn-primary:hover{background:var(--dsw-alias-button-primary-hover,#43454a);border-color:var(--dsw-alias-button-primary-hover,#43454a)}
-.dshf-status{font-size:12px;line-height:18px;color:var(--dsw-alias-label-tertiary,#81858c);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dshf-status-ok{color:var(--dsw-alias-state-success-primary,#22c55e)}
-.dshf-status-err{color:var(--dsw-alias-state-error-primary,#ec1313)}
-.dshf-meta{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:11px;line-height:16px;color:var(--dsw-alias-label-caption,#adb2b8)}
-.dshf-meta-item{white-space:nowrap}
+.dshfk-trigger{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;box-sizing:border-box;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--dsw-alias-label-secondary,#61666b);font-family:inherit;font-size:14px;line-height:1;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease}
+.dshfk-trigger:hover{background:var(--dsw-alias-interactive-bg-hover,#2631480f);color:var(--dsw-alias-label-primary,#0f1115)}
+.dshfk-trigger:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4176e6);outline-offset:1px}
+.dshfk-trigger-on{color:var(--dsw-alias-brand-primary,#0f1115)}
+.dshfk-trigger-open{border-color:var(--dsw-alias-border-l2,#0000001a);background:var(--dsw-alias-interactive-bg-active,#2631481a)}
+.dshfk-trigger-icon{display:block;transform:translateY(-0.5px)}
+.dshfk-trigger-dot{position:absolute;right:2px;bottom:2px;width:5px;height:5px;border-radius:50%;background:var(--dsw-alias-state-success-primary,#22c55e);box-shadow:0 0 0 1.5px var(--dsw-alias-bg-layer-1,#fff)}
+.dshfk-trigger-err .dshfk-trigger-dot{background:var(--dsw-alias-state-error-primary,#ec1313)}
+.dshfk-panel{display:flex;flex-direction:column;gap:10px;width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--dsw-alias-border-l1,#0000000a);border-radius:12px;background:var(--dsw-alias-bg-layer-1,#fff);box-shadow:0 1px 2px rgba(0,0,0,.04);color:var(--dsw-alias-label-primary,#1f2329);font-size:13px;line-height:1.5;font-family:inherit;text-align:left}
+.dshfk-panel *{box-sizing:border-box}
+.dshfk-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dshfk-head-title{font-size:12px;line-height:18px;font-weight:600;color:var(--dsw-alias-label-primary,#0f1115);user-select:none}
+.dshfk-head-tag{font-size:11px;line-height:16px;padding:1px 6px;border-radius:999px;border:1px solid var(--dsw-alias-border-l2,#0000001a);color:var(--dsw-alias-label-tertiary,#81858c);font-family:Consolas,"Cascadia Mono",monospace;user-select:none}
+.dshfk-grow{flex:1 1 auto;min-width:4px}
+.dshfk-close{appearance:none;-webkit-appearance:none;font-family:inherit;font-size:12px;line-height:18px;padding:1px 9px;border-radius:8px;border:1px solid var(--dsw-alias-border-l1,#0000000a);background:transparent;color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;white-space:nowrap}
+.dshfk-close:hover{background:var(--dsw-alias-interactive-bg-hover,#2631480f);color:var(--dsw-alias-label-primary,#0f1115)}
+.dshfk-close:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4176e6);outline-offset:1px}
+.dshfk-chip{appearance:none;-webkit-appearance:none;font-family:inherit;font-size:12px;line-height:18px;padding:2px 12px;border-radius:999px;border:1px solid var(--dsw-alias-border-l2,#0000001a);background:var(--dsw-alias-bg-layer-2,transparent);color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;user-select:none;white-space:nowrap;transition:background .15s ease,border-color .15s ease,color .15s ease}
+.dshfk-chip:hover{border-color:var(--dsw-alias-border-l3,#0000001f);color:var(--dsw-alias-label-primary,#0f1115)}
+.dshfk-chip:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4176e6);outline-offset:1px}
+.dshfk-chip-on,.dshfk-chip-on:hover{background:var(--dsw-alias-brand-primary,#0f1115);border-color:var(--dsw-alias-brand-primary,#0f1115);color:var(--dsw-alias-label-primary-foreground,#fff);font-weight:500}
+.dshfk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 14px;align-items:start}
+.dshfk-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.dshfk-field-label{font-size:12px;line-height:16px;color:var(--dsw-alias-label-tertiary,#81858c);user-select:none}
+.dshfk-input{width:100%;min-width:0;font-family:inherit;font-size:12px;line-height:18px;padding:5px 8px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2,#0000001a);background:var(--dsw-alias-bg-layer-2,#fff);color:var(--dsw-alias-label-primary,#0f1115);outline:none}
+.dshfk-input::placeholder{color:var(--dsw-alias-label-caption,#adb2b8)}
+.dshfk-input:focus{border-color:var(--dsw-alias-state-business-primary,#4176e6);box-shadow:0 0 0 2px color-mix(in srgb,var(--dsw-alias-state-business-primary,#4176e6) 18%,transparent)}
+.dshfk-textarea{width:100%;min-width:0;min-height:56px;font-family:inherit;font-size:12px;line-height:18px;padding:6px 8px;border-radius:8px;border:1px solid var(--dsw-alias-border-l2,#0000001a);background:var(--dsw-alias-bg-layer-2,#fff);color:var(--dsw-alias-label-primary,#0f1115);outline:none;resize:vertical}
+.dshfk-textarea::placeholder{color:var(--dsw-alias-label-caption,#adb2b8)}
+.dshfk-textarea:focus{border-color:var(--dsw-alias-state-business-primary,#4176e6);box-shadow:0 0 0 2px color-mix(in srgb,var(--dsw-alias-state-business-primary,#4176e6) 18%,transparent)}
+.dshfk-check{display:inline-flex;align-items:center;gap:8px;min-height:28px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;user-select:none}
+.dshfk-checkbox{flex:none;width:14px;height:14px;margin:0;accent-color:var(--dsw-alias-brand-primary,#0f1115);cursor:pointer}
+.dshfk-seg{display:inline-flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--dsw-alias-border-l2,#0000001a);border-radius:999px;background:var(--dsw-alias-bg-layer-2,transparent);align-self:flex-start}
+.dshfk-seg-btn{appearance:none;-webkit-appearance:none;font-family:inherit;font-size:12px;line-height:16px;padding:2px 10px;border:0;border-radius:999px;background:transparent;color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;white-space:nowrap}
+.dshfk-seg-btn:hover{color:var(--dsw-alias-label-primary,#0f1115)}
+.dshfk-seg-btn:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4176e6);outline-offset:1px}
+.dshfk-seg-btn-on,.dshfk-seg-btn-on:hover{background:var(--dsw-alias-interactive-bg-active,#2631481a);color:var(--dsw-alias-label-primary,#0f1115);font-weight:500}
+.dshfk-collapse{border:1px solid var(--dsw-alias-border-l1,#0000000a);border-radius:8px;padding:6px 10px;background:var(--dsw-alias-bg-layer-1,transparent)}
+.dshfk-collapse[open]{padding-bottom:8px}
+.dshfk-summary{display:flex;align-items:center;gap:6px;font-size:12px;line-height:18px;color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;user-select:none;list-style:none}
+.dshfk-summary::-webkit-details-marker{display:none}
+.dshfk-summary::before{content:'\\25B8';flex:none;font-size:10px;line-height:18px;color:var(--dsw-alias-label-caption,#adb2b8);transition:transform .15s ease}
+.dshfk-collapse[open]>.dshfk-summary::before{transform:rotate(90deg)}
+.dshfk-collapse[open]>.dshfk-summary{color:var(--dsw-alias-label-primary,#0f1115)}
+.dshfk-body{margin-top:6px}
+.dshfk-tools{display:flex;flex-direction:column;gap:6px;min-width:0;margin:0;padding:0;border:0}
+.dshfk-legend{padding:0;font-size:12px;line-height:16px;color:var(--dsw-alias-label-tertiary,#81858c)}
+.dshfk-tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 12px}
+.dshfk-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--dsw-alias-border-l1,#0000000a)}
+.dshfk-btn{appearance:none;-webkit-appearance:none;font-family:inherit;font-size:12px;line-height:18px;padding:4px 14px;border-radius:8px;border:1px solid var(--dsw-alias-border-l1,#0000000a);background:transparent;color:var(--dsw-alias-label-secondary,#61666b);cursor:pointer;white-space:nowrap;transition:background .15s ease,color .15s ease,border-color .15s ease}
+.dshfk-btn:hover{background:var(--dsw-alias-interactive-bg-hover,#2631480f);color:var(--dsw-alias-label-primary,#0f1115)}
+.dshfk-btn:active{background:var(--dsw-alias-interactive-bg-active,#2631481a)}
+.dshfk-btn:disabled{opacity:.5;cursor:default}
+.dshfk-btn:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary,#4176e6);outline-offset:1px}
+.dshfk-btn-primary,.dshfk-btn-primary:hover{background:var(--dsw-alias-button-primary-fill,#0f1115);border-color:var(--dsw-alias-button-primary-fill,#0f1115);color:var(--dsw-alias-label-primary-foreground,#fff);font-weight:500}
+.dshfk-btn-primary:hover{background:var(--dsw-alias-button-primary-hover,#43454a);border-color:var(--dsw-alias-button-primary-hover,#43454a)}
+.dshfk-status{font-size:12px;line-height:18px;color:var(--dsw-alias-label-tertiary,#81858c);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dshfk-status-ok{color:var(--dsw-alias-state-success-primary,#22c55e)}
+.dshfk-status-err{color:var(--dsw-alias-state-error-primary,#ec1313)}
+.dshfk-meta{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:11px;line-height:16px;color:var(--dsw-alias-label-caption,#adb2b8)}
+.dshfk-meta-item{white-space:nowrap}
 `
 
     /* --------------------------------------------------- 共享 store */
@@ -572,25 +572,25 @@ window.__ModuleLoader__.load({
       const modeState = snapshot.host.state
       const anyModeOn = modeState.breakArmor || modeState.reverse
       const hasError = Boolean(snapshot.connError)
-      const classes = ['dshf-trigger']
-      if (anyModeOn) classes.push('dshf-trigger-on')
-      if (snapshot.open) classes.push('dshf-trigger-open')
-      if (hasError) classes.push('dshf-trigger-err')
+      const classes = ['dshfk-trigger']
+      if (anyModeOn) classes.push('dshfk-trigger-on')
+      if (snapshot.open) classes.push('dshfk-trigger-open')
+      if (hasError) classes.push('dshfk-trigger-err')
 
       return h(
         'button',
         {
           type: 'button',
           className: classes.join(' '),
-          'aria-label': 'dsh-fxxk 插件设置',
+          'aria-label': 'dsh-fuck 插件设置',
           'aria-expanded': snapshot.open ? 'true' : 'false',
           'aria-controls': PANEL_ID,
-          'data-dsh-fxxk-trigger': '',
+          'data-dsh-fuck-trigger': '',
           title: hasError ? '插件设置（破甲 / 逆向）｜无法连接宿主（插件未加载？）' : '插件设置（破甲 / 逆向）',
           onClick: toggleOpen,
         },
-        h('span', { className: 'dshf-trigger-icon', 'aria-hidden': true }, '◐'),
-        anyModeOn || hasError ? h('span', { className: 'dshf-trigger-dot', 'aria-hidden': true }) : null,
+        h('span', { className: 'dshfk-trigger-icon', 'aria-hidden': true }, '◐'),
+        anyModeOn || hasError ? h('span', { className: 'dshfk-trigger-dot', 'aria-hidden': true }) : null,
       )
     }
 
@@ -618,10 +618,10 @@ window.__ModuleLoader__.load({
       const statusKind = snapshot.status ? snapshot.status.kind : snapshot.connError ? 'err' : 'info'
       const statusClass =
         statusKind === 'ok'
-          ? 'dshf-status dshf-status-ok'
+          ? 'dshfk-status dshfk-status-ok'
           : statusKind === 'err'
-            ? 'dshf-status dshf-status-err'
-            : 'dshf-status'
+            ? 'dshfk-status dshfk-status-err'
+            : 'dshfk-status'
 
       const metaBits = []
       if (host.meta) {
@@ -636,14 +636,14 @@ window.__ModuleLoader__.load({
 
       const head = h(
         'div',
-        { className: 'dshf-head' },
-        h('span', { className: 'dshf-head-title' }, '插件设置'),
-        h('span', { className: 'dshf-head-tag' }, 'dsh-fxxk'),
+        { className: 'dshfk-head' },
+        h('span', { className: 'dshfk-head-title' }, '插件设置'),
+        h('span', { className: 'dshfk-head-tag' }, 'dsh-fuck'),
         h(
           'button',
           {
             type: 'button',
-            className: modeState.breakArmor ? 'dshf-chip dshf-chip-on' : 'dshf-chip',
+            className: modeState.breakArmor ? 'dshfk-chip dshfk-chip-on' : 'dshfk-chip',
             'aria-pressed': modeState.breakArmor ? 'true' : 'false',
             title: '破甲模式：不拒答、直接交付（注入破甲人格提示词）',
             onClick: () => toggleMode('breakArmor'),
@@ -654,31 +654,31 @@ window.__ModuleLoader__.load({
           'button',
           {
             type: 'button',
-            className: modeState.reverse ? 'dshf-chip dshf-chip-on' : 'dshf-chip',
+            className: modeState.reverse ? 'dshfk-chip dshfk-chip-on' : 'dshfk-chip',
             'aria-pressed': modeState.reverse ? 'true' : 'false',
             title: '逆向模式：二进制 / EXE / 移动端逆向工作流（注入逆向人格 + 动态挂载逆向技能）',
             onClick: () => toggleMode('reverse'),
           },
           '逆向',
         ),
-        h('span', { className: 'dshf-grow', 'aria-hidden': true }),
+        h('span', { className: 'dshfk-grow', 'aria-hidden': true }),
         h(
           'button',
-          { type: 'button', className: 'dshf-close', title: '收起插件设置', 'aria-label': '收起插件设置', onClick: toggleOpen },
+          { type: 'button', className: 'dshfk-close', title: '收起插件设置', 'aria-label': '收起插件设置', onClick: toggleOpen },
           '收起',
         ),
       )
 
       const languageSeg = h(
         'div',
-        { className: 'dshf-seg', role: 'group', 'aria-label': '输出语言' },
+        { className: 'dshfk-seg', role: 'group', 'aria-label': '输出语言' },
         LANGUAGES.map((item) =>
           h(
             'button',
             {
               key: item.value,
               type: 'button',
-              className: draft.language === item.value ? 'dshf-seg-btn dshf-seg-btn-on' : 'dshf-seg-btn',
+              className: draft.language === item.value ? 'dshfk-seg-btn dshfk-seg-btn-on' : 'dshfk-seg-btn',
               'aria-pressed': draft.language === item.value ? 'true' : 'false',
               title: `输出语言：${item.label}`,
               onClick: () => patchDraft({ language: item.value }),
@@ -691,22 +691,22 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         {
-          className: 'dshf-panel',
+          className: 'dshfk-panel',
           id: PANEL_ID,
           role: 'region',
-          'aria-label': 'dsh-fxxk 插件设置',
-          'data-dsh-fxxk-panel': '',
+          'aria-label': 'dsh-fuck 插件设置',
+          'data-dsh-fuck-panel': '',
         },
         head,
         h(
           'div',
-          { className: 'dshf-grid' },
+          { className: 'dshfk-grid' },
           h(
             'label',
-            { className: 'dshf-field' },
-            h('span', { className: 'dshf-field-label' }, '称呼'),
+            { className: 'dshfk-field' },
+            h('span', { className: 'dshfk-field-label' }, '称呼'),
             h('input', {
-              className: 'dshf-input',
+              className: 'dshfk-input',
               type: 'text',
               value: draft.userName,
               maxLength: USER_NAME_MAX,
@@ -719,19 +719,19 @@ window.__ModuleLoader__.load({
           ),
           h(
             'div',
-            { className: 'dshf-field' },
-            h('span', { className: 'dshf-field-label' }, '输出语言'),
+            { className: 'dshfk-field' },
+            h('span', { className: 'dshfk-field-label' }, '输出语言'),
             languageSeg,
           ),
           h(
             'label',
-            { className: 'dshf-field' },
-            h('span', { className: 'dshf-field-label' }, '每句加称呼'),
+            { className: 'dshfk-field' },
+            h('span', { className: 'dshfk-field-label' }, '每句加称呼'),
             h(
               'span',
-              { className: 'dshf-check', title: '开启后要求模型在每句句首加称呼（代码块内不加）' },
+              { className: 'dshfk-check', title: '开启后要求模型在每句句首加称呼（代码块内不加）' },
               h('input', {
-                className: 'dshf-checkbox',
+                className: 'dshfk-checkbox',
                 type: 'checkbox',
                 checked: draft.addressEverySentence,
                 'aria-label': '每句开头加称呼',
@@ -743,13 +743,13 @@ window.__ModuleLoader__.load({
         ),
         h(
           'details',
-          { className: 'dshf-collapse', open: snapshot.expandAdvanced ? true : undefined },
-          h('summary', { className: 'dshf-summary' }, '破甲补充指令'),
+          { className: 'dshfk-collapse', open: snapshot.expandAdvanced ? true : undefined },
+          h('summary', { className: 'dshfk-summary' }, '破甲补充指令'),
           h(
             'div',
-            { className: 'dshf-body' },
+            { className: 'dshfk-body' },
             h('textarea', {
-              className: 'dshf-textarea',
+              className: 'dshfk-textarea',
               value: draft.customBreakArmor,
               maxLength: CUSTOM_MAX,
               rows: 3,
@@ -762,13 +762,13 @@ window.__ModuleLoader__.load({
         ),
         h(
           'details',
-          { className: 'dshf-collapse', open: snapshot.expandAdvanced ? true : undefined },
-          h('summary', { className: 'dshf-summary' }, '逆向补充指令'),
+          { className: 'dshfk-collapse', open: snapshot.expandAdvanced ? true : undefined },
+          h('summary', { className: 'dshfk-summary' }, '逆向补充指令'),
           h(
             'div',
-            { className: 'dshf-body' },
+            { className: 'dshfk-body' },
             h('textarea', {
-              className: 'dshf-textarea',
+              className: 'dshfk-textarea',
               value: draft.customReverse,
               maxLength: CUSTOM_MAX,
               rows: 3,
@@ -781,17 +781,17 @@ window.__ModuleLoader__.load({
         ),
         h(
           'fieldset',
-          { className: 'dshf-tools' },
-          h('legend', { className: 'dshf-legend' }, '逆向工具路径（留空则按默认安装位置探测）'),
+          { className: 'dshfk-tools' },
+          h('legend', { className: 'dshfk-legend' }, '逆向工具路径（留空则按默认安装位置探测）'),
           h(
             'div',
-            { className: 'dshf-tools-grid' },
+            { className: 'dshfk-tools-grid' },
             h(
               'label',
-              { className: 'dshf-field' },
-              h('span', { className: 'dshf-field-label' }, 'IDA'),
+              { className: 'dshfk-field' },
+              h('span', { className: 'dshfk-field-label' }, 'IDA'),
               h('input', {
-                className: 'dshf-input',
+                className: 'dshfk-input',
                 type: 'text',
                 value: draft.reverseTools.ida,
                 maxLength: TOOL_PATH_MAX,
@@ -804,10 +804,10 @@ window.__ModuleLoader__.load({
             ),
             h(
               'label',
-              { className: 'dshf-field' },
-              h('span', { className: 'dshf-field-label' }, 'x64dbg'),
+              { className: 'dshfk-field' },
+              h('span', { className: 'dshfk-field-label' }, 'x64dbg'),
               h('input', {
-                className: 'dshf-input',
+                className: 'dshfk-input',
                 type: 'text',
                 value: draft.reverseTools.x64dbg,
                 maxLength: TOOL_PATH_MAX,
@@ -820,10 +820,10 @@ window.__ModuleLoader__.load({
             ),
             h(
               'label',
-              { className: 'dshf-field' },
-              h('span', { className: 'dshf-field-label' }, 'Ghidra'),
+              { className: 'dshfk-field' },
+              h('span', { className: 'dshfk-field-label' }, 'Ghidra'),
               h('input', {
-                className: 'dshf-input',
+                className: 'dshfk-input',
                 type: 'text',
                 value: draft.reverseTools.ghidra,
                 maxLength: TOOL_PATH_MAX,
@@ -838,12 +838,12 @@ window.__ModuleLoader__.load({
         ),
         h(
           'div',
-          { className: 'dshf-actions' },
+          { className: 'dshfk-actions' },
           h(
             'button',
             {
               type: 'button',
-              className: 'dshf-btn dshf-btn-primary',
+              className: 'dshfk-btn dshfk-btn-primary',
               title: snapshot.dirty ? '保存设置并立即生效（下一轮模型请求就会带上）' : '保存设置（当前没有未保存修改）',
               onClick: save,
             },
@@ -851,14 +851,14 @@ window.__ModuleLoader__.load({
           ),
           h(
             'button',
-            { type: 'button', className: 'dshf-btn', title: '恢复出厂默认值（会写回宿主设置文件）', onClick: reset },
+            { type: 'button', className: 'dshfk-btn', title: '恢复出厂默认值（会写回宿主设置文件）', onClick: reset },
             '重置',
           ),
           h(
             'button',
             {
               type: 'button',
-              className: 'dshf-btn',
+              className: 'dshfk-btn',
               title: '重新读取提示词与逆向技能文件，并丢弃未保存修改',
               onClick: reload,
             },
@@ -869,8 +869,8 @@ window.__ModuleLoader__.load({
         metaBits.length > 0
           ? h(
               'div',
-              { className: 'dshf-meta' },
-              metaBits.map((text, index) => h('span', { key: index, className: 'dshf-meta-item' }, text)),
+              { className: 'dshfk-meta' },
+              metaBits.map((text, index) => h('span', { key: index, className: 'dshfk-meta-item' }, text)),
             )
           : null,
       )
@@ -886,7 +886,7 @@ window.__ModuleLoader__.load({
         if (typeof document === 'undefined') return
         if (!styleTag || !styleTag.isConnected) {
           styleTag = document.createElement('style')
-          styleTag.setAttribute('data-dsh-fxxk', '')
+          styleTag.setAttribute('data-dsh-fuck', '')
           styleTag.textContent = CSS
           document.head.append(styleTag)
         }
@@ -899,7 +899,7 @@ window.__ModuleLoader__.load({
       } catch (error) {
         // 样式失败不该阻止槽位注册；只是会退化成无样式。
         try {
-          console.warn('[dsh-fxxk] style injection failed:', error)
+          console.warn('[dsh-fuck] style injection failed:', error)
         } catch {
           /* ignore */
         }
@@ -921,7 +921,7 @@ window.__ModuleLoader__.load({
         }
       } catch (error) {
         try {
-          console.warn('[dsh-fxxk] data lifecycle failed:', error)
+          console.warn('[dsh-fuck] data lifecycle failed:', error)
         } catch {
           /* ignore */
         }
@@ -931,20 +931,20 @@ window.__ModuleLoader__.load({
         // 工具条小按钮：紧跟「完全权限」按钮（conversation.input.permission）之后。
         ctx.slots.inject('conversation.input.left', () =>
           ctx.slots.register(
-            { name: 'conversation.input.left', id: 'dsh-fxxk-trigger', order: 10 },
+            { name: 'conversation.input.left', id: 'dsh-fuck-trigger', order: 10 },
             DualTrigger,
           ),
         )
         // composer 上方整行：设置面板（order 30，排在 Chat 的 queue dock 之后）。
         ctx.slots.inject('conversation.input.dock', () =>
           ctx.slots.register(
-            { name: 'conversation.input.dock', id: 'dsh-fxxk-panel', order: 30 },
+            { name: 'conversation.input.dock', id: 'dsh-fuck-panel', order: 30 },
             DualPanel,
           ),
         )
       } catch (error) {
         try {
-          console.warn('[dsh-fxxk] slot registration failed:', error)
+          console.warn('[dsh-fuck] slot registration failed:', error)
         } catch {
           /* ignore */
         }

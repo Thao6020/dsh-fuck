@@ -1,5 +1,5 @@
 /**
- * dsh-fxxk 宿主侧单测（假 ctx，不启动真实宿主）。
+ * dsh-fuck 宿主侧单测（假 ctx，不启动真实宿主）。
  *
  * 运行：`node test/host.test.mjs`
  *
@@ -26,7 +26,7 @@ import * as skills from '../lib/skills.js'
 
 const tempRoots = []
 
-function tempDir(prefix = 'dsh-fxxk-test-') {
+function tempDir(prefix = 'dsh-fuck-test-') {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix))
   tempRoots.push(dir)
   return dir
@@ -65,7 +65,7 @@ function makeRes() {
   }
 }
 
-function makeReq({ method = 'GET', headers = { host: '127.0.0.1:3080' }, body = '', remoteAddress = '127.0.0.1', url = '/dsh-fxxk/api' } = {}) {
+function makeReq({ method = 'GET', headers = { host: '127.0.0.1:3080' }, body = '', remoteAddress = '127.0.0.1', url = '/dsh-fuck/api' } = {}) {
   const req = new EventEmitter()
   req.method = method
   req.headers = headers
@@ -229,7 +229,7 @@ function createFakeCtx(options = {}) {
 
 /** 在临时目录造一个「插件内容目录」：prompts/ + skills/。 */
 function makeContentRoot({ withPrompts = true, skillDocs = [] } = {}) {
-  const root = tempDir('dsh-fxxk-content-')
+  const root = tempDir('dsh-fuck-content-')
   if (withPrompts) {
     fs.mkdirSync(path.join(root, 'prompts'), { recursive: true })
     fs.writeFileSync(
@@ -318,7 +318,7 @@ test('normalizeState：空/非对象回退默认值，base 可提供第二层默
 // ---------------------------------------------------------------------------
 
 test('settings：saveState + loadState 往返，目录自动创建、无临时文件残留', () => {
-  const home = tempDir('dsh-fxxk-home-')
+  const home = tempDir('dsh-fuck-home-')
   const written = settings.saveState(home, st({
     breakArmor: true,
     userName: '阿超',
@@ -328,7 +328,7 @@ test('settings：saveState + loadState 往返，目录自动创建、无临时�
   }))
 
   const file = settings.statePath(home)
-  assert.equal(file, path.join(home, 'dsh-fxxk', 'settings.json'))
+  assert.equal(file, path.join(home, 'dsh-fuck', 'settings.json'))
   assert.equal(fs.existsSync(file), true)
 
   const onDisk = JSON.parse(fs.readFileSync(file, 'utf8'))
@@ -344,7 +344,7 @@ test('settings：saveState + loadState 往返，目录自动创建、无临时�
 })
 
 test('settings：文件损坏时备份为 .bak 并回退默认值；缺文件直接默认值', () => {
-  const home = tempDir('dsh-fxxk-corrupt-')
+  const home = tempDir('dsh-fuck-corrupt-')
   const dir = settings.stateDir(home)
   fs.mkdirSync(dir, { recursive: true })
   fs.writeFileSync(path.join(dir, 'settings.json'), '{ 这不是 JSON', 'utf8')
@@ -357,7 +357,7 @@ test('settings：文件损坏时备份为 .bak 并回退默认值；缺文件直
   assert.equal(fs.readFileSync(path.join(dir, backups[0]), 'utf8'), '{ 这不是 JSON')
 
   // 缺文件：不抛错、不产生 .bak
-  const emptyHome = tempDir('dsh-fxxk-empty-')
+  const emptyHome = tempDir('dsh-fuck-empty-')
   assert.deepEqual(settings.loadState(emptyHome), settings.cloneDefaults())
 })
 
@@ -375,7 +375,7 @@ test('buildPromptText：单开破甲，含模式头/人格/称呼/语言/称呼�
     st({ breakArmor: true, userName: '阿超', language: 'zh' }),
     { breakArmor: '## 人格\n我是 {{user}} 的助手。', reverse: 'REVERSE_BODY' },
   )
-  assert.match(text, /## 插件设置面板（dsh-fxxk）/)
+  assert.match(text, /## 插件设置面板（dsh-fuck）/)
   assert.match(text, /破甲模式=开；逆向模式=关；用户称呼=阿超/)
   assert.match(text, /我是 阿超 的助手。/)
   assert.equal(text.includes('REVERSE_BODY'), false)
@@ -440,7 +440,7 @@ test('readPromptAssets：读取真实文件、mtime 缓存复用、reload 强制
   assert.equal(second.ok, true)
 
   // 缺失目录降级
-  const missing = prompts.readPromptAssets(tempDir('dsh-fxxk-noprompt-'))
+  const missing = prompts.readPromptAssets(tempDir('dsh-fuck-noprompt-'))
   assert.equal(missing.ok, false)
   assert.deepEqual(missing.missing.sort(), ['break-armor.md', 'reverse.md'])
 })
@@ -558,7 +558,7 @@ test('api：selftest（GET ?selftest=1 / POST op=selftest / 抛错降级为 ok:t
   const deps = apiDeps(st())
   const handler = (req, res) => api.handleApi(deps, req, res)
 
-  const viaGet = await callHandler(handler, { method: 'GET', url: '/dsh-fxxk/api?selftest=1' })
+  const viaGet = await callHandler(handler, { method: 'GET', url: '/dsh-fuck/api?selftest=1' })
   assert.equal(viaGet.status, 200)
   assert.equal(viaGet.headers['cache-control'], 'no-store')
   assert.deepEqual(viaGet.json, {
@@ -590,7 +590,7 @@ test('api：selftest（GET ?selftest=1 / POST op=selftest / 抛错降级为 ok:t
   }
   const degraded = await callHandler((req, res) => api.handleApi(broken, req, res), {
     method: 'GET',
-    url: '/dsh-fxxk/api?selftest=1',
+    url: '/dsh-fuck/api?selftest=1',
   })
   assert.equal(degraded.status, 200)
   assert.equal(degraded.json.ok, true)
@@ -638,7 +638,7 @@ test('skills：frontmatter 解析（正文剥离、严格布尔、非法 name）
 })
 
 test('skills：scanSkills 跳过非法/超大/无 SKILL.md 的目录', () => {
-  const root = tempDir('dsh-fxxk-scan-')
+  const root = tempDir('dsh-fuck-scan-')
   const writeSkill = (dirName, content) => {
     fs.mkdirSync(path.join(root, 'skills', dirName), { recursive: true })
     fs.writeFileSync(path.join(root, 'skills', dirName, 'SKILL.md'), content, 'utf8')
@@ -662,7 +662,7 @@ test('skills：scanSkills 跳过非法/超大/无 SKILL.md 的目录', () => {
 })
 
 test('skills：syncSkills 幂等挂载 / 关闭卸载 / 服务缺失静默降级', () => {
-  const contentRoot = tempDir('dsh-fxxk-sync-')
+  const contentRoot = tempDir('dsh-fuck-sync-')
   const writeSkill = (dirName, name, body = '') => {
     fs.mkdirSync(path.join(contentRoot, 'skills', dirName), { recursive: true })
     fs.writeFileSync(path.join(contentRoot, 'skills', dirName, 'SKILL.md'), skillDoc(name, { body }), 'utf8')
@@ -776,7 +776,7 @@ test('skills：getService 对 cordis 式「读属性就抛」的代理必须安�
 // ---------------------------------------------------------------------------
 
 test('index：装配 section/路由/命令，GET→set→toggle→命令→reload 全链路', async (t) => {
-  const home = tempDir('dsh-fxxk-mount-home-')
+  const home = tempDir('dsh-fuck-mount-home-')
   const contentRoot = makeContentRoot({
     skillDocs: [
       ['rev-workflow', skillDoc('rev-workflow', { body: '# 逆向总流程' })],
@@ -788,12 +788,12 @@ test('index：装配 section/路由/命令，GET→set→toggle→命令→reloa
 
   apply(ctx, { homeDir: home, pluginRoot: contentRoot })
   assert.equal(ctx.rec.sections.length, 1)
-  assert.equal(ctx.rec.sections[0].name, 'dsh-fxxk:modes')
+  assert.equal(ctx.rec.sections[0].name, 'dsh-fuck:modes')
   assert.equal(ctx.rec.sections[0].order, 5100)
   assert.equal(ctx.rec.sections[0].interpolate, false)
   assert.equal(ctx.rec.routes.length, 1)
   assert.equal(ctx.rec.routes[0].kind, 'exact')
-  assert.equal(ctx.rec.routes[0].path, '/dsh-fxxk/api')
+  assert.equal(ctx.rec.routes[0].path, '/dsh-fuck/api')
   assert.equal(ctx.rec.commands.length, 1)
   assert.equal(ctx.rec.commands[0].name, 'dual')
 
@@ -804,7 +804,7 @@ test('index：装配 section/路由/命令，GET→set→toggle→命令→reloa
   assert.equal(section.text(), '')
 
   // 自检：section 已注册进 assembly，但正文为空
-  const selfOff = await callHandler(route.handler, { method: 'GET', url: '/dsh-fxxk/api?selftest=1' })
+  const selfOff = await callHandler(route.handler, { method: 'GET', url: '/dsh-fuck/api?selftest=1' })
   assert.equal(selfOff.status, 200)
   assert.equal(selfOff.json.ok, true)
   assert.equal(selfOff.json.selftest.sectionPresent, true)
@@ -856,10 +856,10 @@ test('index：装配 section/路由/命令，GET→set→toggle→命令→reloa
   assert.match(breakText, /输出语言：中文/)
 
   // 自检能证明「section 进 assembly 且内容与 buildPromptText 一致」
-  const selfOn = await callHandler(route.handler, { method: 'GET', url: '/dsh-fxxk/api?selftest=1' })
+  const selfOn = await callHandler(route.handler, { method: 'GET', url: '/dsh-fuck/api?selftest=1' })
   assert.equal(selfOn.json.selftest.sectionPresent, true)
   assert.equal(selfOn.json.selftest.sectionChars, breakText.length)
-  assert.match(selfOn.json.selftest.sectionHead, /## 插件设置面板（dsh-fxxk）/i)
+  assert.match(selfOn.json.selftest.sectionHead, /## 插件设置面板（dsh-fuck）/i)
   assert.equal(selfOn.json.selftest.sectionHead.includes('\n'), false)
   assert.equal(selfOn.json.selftest.promptChars >= selfOn.json.selftest.sectionChars, true)
 
@@ -921,7 +921,7 @@ test('index：装配 section/路由/命令，GET→set→toggle→命令→reloa
   assert.equal(reset.status, 200)
   assert.deepEqual(reset.json.state, settings.cloneDefaults())
   assert.equal(section.text(), '')
-  const selfReset = await callHandler(route.handler, { method: 'GET', url: '/dsh-fxxk/api?selftest=1' })
+  const selfReset = await callHandler(route.handler, { method: 'GET', url: '/dsh-fuck/api?selftest=1' })
   assert.equal(selfReset.json.selftest.sectionPresent, true)
   assert.equal(selfReset.json.selftest.sectionChars, 0)
 
@@ -945,7 +945,7 @@ test('index：装配 section/路由/命令，GET→set→toggle→命令→reloa
 })
 
 test('index：assemble 抛错时 selftest 降级为 ok:true + error（不 500）', async (t) => {
-  const home = tempDir('dsh-fxxk-selftest-boom-')
+  const home = tempDir('dsh-fuck-selftest-boom-')
   const contentRoot = makeContentRoot()
   const ctx = createFakeCtx({
     assemble: () => {
@@ -957,7 +957,7 @@ test('index：assemble 抛错时 selftest 降级为 ok:true + error（不 500）
   apply(ctx, { homeDir: home, pluginRoot: contentRoot })
   const route = ctx.rec.routes[0]
 
-  const result = await callHandler(route.handler, { method: 'GET', url: '/dsh-fxxk/api?selftest=1' })
+  const result = await callHandler(route.handler, { method: 'GET', url: '/dsh-fuck/api?selftest=1' })
   assert.equal(result.status, 200)
   assert.equal(result.json.ok, true)
   assert.equal(result.json.selftest.sectionPresent, false)
@@ -973,7 +973,7 @@ test('index：assemble 抛错时 selftest 降级为 ok:true + error（不 500）
 })
 
 test('index：配置默认值生效；skills 服务缺失时静默降级', async (t) => {
-  const home = tempDir('dsh-fxxk-degrade-')
+  const home = tempDir('dsh-fuck-degrade-')
   const contentRoot = makeContentRoot()
   const ctx = createFakeCtx({ skills: false })
   t.after(() => ctx.disposeAll())
@@ -1001,7 +1001,7 @@ test('index：配置默认值生效；skills 服务缺失时静默降级', async
 })
 
 test('index：ctx.inject 不触发但 ctx.get 可用 → reverse 仍挂载技能（真实 500 回归）', async (t) => {
-  const home = tempDir('dsh-fxxk-get-service-')
+  const home = tempDir('dsh-fuck-get-service-')
   const contentRoot = makeContentRoot({
     skillDocs: [
       ['rev-workflow', skillDoc('rev-workflow', { body: '# 逆向总流程' })],
@@ -1033,7 +1033,7 @@ test('index：ctx.inject 不触发但 ctx.get 可用 → reverse 仍挂载技能
   assert.equal(ctx.rec.registeredSkills.length, 2)
 
   // selftest 同时验证：逆向已开、没有技能相关错误
-  const self = await callHandler(route.handler, { method: 'GET', url: '/dsh-fxxk/api?selftest=1' })
+  const self = await callHandler(route.handler, { method: 'GET', url: '/dsh-fuck/api?selftest=1' })
   assert.equal(self.json.selftest.error, null)
   assert.match(self.json.selftest.sectionHead, /逆向模式=开/)
 
@@ -1048,7 +1048,7 @@ test('index：ctx.inject 不触发但 ctx.get 可用 → reverse 仍挂载技能
 })
 
 test('index：skills 完全不可用 + cordis 式 hostile 属性 → toggle reverse 仍 ok:true 且 meta 降级', async (t) => {
-  const home = tempDir('dsh-fxxk-skills-down-')
+  const home = tempDir('dsh-fuck-skills-down-')
   const contentRoot = makeContentRoot()
   const ctx = createFakeCtx({
     skills: false,
@@ -1076,7 +1076,7 @@ test('index：skills 完全不可用 + cordis 式 hostile 属性 → toggle reve
   const got = await callHandler(route.handler)
   assert.equal(got.status, 200)
   assert.equal(got.json.meta.skillsMounted, false)
-  const self = await callHandler(route.handler, { method: 'GET', url: '/dsh-fxxk/api?selftest=1' })
+  const self = await callHandler(route.handler, { method: 'GET', url: '/dsh-fuck/api?selftest=1' })
   assert.equal(self.status, 200)
   const reset = await callHandler(route.handler, { method: 'POST', body: JSON.stringify({ op: 'reset' }) })
   assert.equal(reset.status, 200)
@@ -1084,7 +1084,7 @@ test('index：skills 完全不可用 + cordis 式 hostile 属性 → toggle reve
 })
 
 test('index：提示词文件缺失 → 降级文本 + meta.promptFilesOk=false', async (t) => {
-  const home = tempDir('dsh-fxxk-noprompt-home-')
+  const home = tempDir('dsh-fuck-noprompt-home-')
   const contentRoot = makeContentRoot({ withPrompts: false })
   const ctx = createFakeCtx()
   t.after(() => ctx.disposeAll())
@@ -1105,7 +1105,7 @@ test('index：提示词文件缺失 → 降级文本 + meta.promptFilesOk=false'
 })
 
 test('index：webServer 缺失时 apply 不抛（路由跳过）', () => {
-  const home = tempDir('dsh-fxxk-noroute-')
+  const home = tempDir('dsh-fuck-noroute-')
   const contentRoot = makeContentRoot()
   const ctx = createFakeCtx({ webServer: false })
   try {

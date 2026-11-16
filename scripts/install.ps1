@@ -1,46 +1,18 @@
 ﻿<#
 .SYNOPSIS
-  把 dsh-fxxk 安装进指定 DSH profile（备份 → pnpm add → bundles 追加 → 启动校验 → 失败回滚）。
+  把 dsh-fuck 安装进指定 DSH profile（备份 → add → bundles 追加 → 可选启动校验 → 失败回滚）。
 
 .DESCRIPTION
-  为什么脚本要做三件事而不是一条命令：
-    - `dsh plugin --profile <p> add <路径>` 只等价于在 profile 目录里执行 pnpm add，
-      它只把包放进 package.json 的 dependencies 和 node_modules 链接，**不会**把包名
-      加进 dsh.profile.bundles；没有 bundles 这一层，插件的 cordis.patch.yml 与
-      client 半侧都不会被宿主加载（实测）。
-    - 安装前必须备份 package.json / pnpm-lock.yaml / cordis.patch.yml，因为 pnpm 会
-      改写它们；插件激活失败时要能原样回滚。
-    - 装完要真的起一次宿主，看到 /dsh-fxxk/api 返回 ok:true 才算成功。
-      宿主对单个插件 apply 抛错是「warning: 1 entry did not activate」，不会整体
-      启动失败，所以必须主动 grep 日志判断激活结果。
+  单行说明：只执行 `dsh plugin add` 不够，必须把包名追加进 dsh.profile.bundles 宿主才会加载插件。
 
 .PARAMETER Profile
-  目标 profile 名，必填、无默认值（刻意如此：绝不能默认落到 tauri 上）。
-  测试用 dualtest；真实装配由维护者显式传入。
+  目标 profile 名，必填无默认值（避免误装到 tauri）。
 
 .PARAMETER PluginRoot
   插件根目录（含 package.json），默认脚本上一级目录。
 
-.PARAMETER DshCmd
-  dsh.cmd 路径，默认自动探测（$env:DSH_CMD → %LOCALAPPDATA%\deepseek-harness\bin\dsh.cmd → PATH）。
-
-.PARAMETER ApiPath
-  插件 HTTP API 路径，默认 /dsh-fxxk/api。
-
-.PARAMETER BootCheckPort
-  启动校验用的端口，默认 3099。
-
-.PARAMETER SkipBootCheck
-  跳过「起宿主 + API 校验」这一步（不推荐）。
-
-.PARAMETER ForceBootCheck
-  profile 是 tauri 时默认跳过启动校验（避免和正在运行的桌面 GUI 抢状态），
-  加这个开关强制校验。
-
 .EXAMPLE
-  powershell -File scripts/install.ps1 -Profile dualtest
-.EXAMPLE
-  powershell -File scripts/install.ps1 -Profile tauri -PluginRoot "C:\path\to\plugin"
+  powershell -File scripts/install.ps1 -Profile tauri
 #>
 [CmdletBinding()]
 param(
@@ -51,7 +23,7 @@ param(
 
   [string]$DshCmd,
 
-  [string]$ApiPath = '/dsh-fxxk/api',
+  [string]$ApiPath = '/dsh-fuck/api',
 
   [string]$PluginName = '',
 
@@ -139,7 +111,7 @@ manifest.dsh.profile.bundles = bundles
 fs.writeFileSync(file, JSON.stringify(manifest, null, 2) + '\n')
 process.stdout.write(changed ? 'added' : 'present')
 '@
-  $tempScript = Join-Path ([System.IO.Path]::GetTempPath()) ("dsh-fxxk-bundles-{0}.js" -f ([System.Guid]::NewGuid().ToString('N')))
+  $tempScript = Join-Path ([System.IO.Path]::GetTempPath()) ("dsh-fuck-bundles-{0}.js" -f ([System.Guid]::NewGuid().ToString('N')))
   try {
     [System.IO.File]::WriteAllText($tempScript, $script, (New-Object System.Text.UTF8Encoding($false)))
     $output = & $Node $tempScript $ManifestPath $PackageName 2>&1
@@ -259,7 +231,7 @@ if ($Profile -eq 'tauri') {
 
 # ---------------------------------------------------------------- 1. 备份
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$backupDir = Join-Path $profileDir (Join-Path '.dsh-fxxk-backup' $stamp)
+$backupDir = Join-Path $profileDir (Join-Path '.dsh-fuck-backup' $stamp)
 New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
 $backupFiles = @('package.json', 'pnpm-lock.yaml', 'cordis.patch.yml')
 $existed = @{}

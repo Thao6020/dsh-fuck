@@ -1,4 +1,4 @@
-# dsh-fxxk
+# dsh-fuck
 
 ## 简介
 
@@ -6,7 +6,7 @@
 
 - 破甲模式：注入「不拒答、直接交付」的行为契约，让模型按你的原话给完整方案，而不是绕圈子。
 - 逆向模式：注入逆向工程搭档人格 + 动态挂载 9 个逆向技能（IDA / x64dbg / Ghidra / 脱壳 / .NET Unity / 补丁 / 恶意样本 / PE 侦察 / 总流程），随开关注册与卸载。
-- 两个模式可单独开、也可同时开；开关状态持久化到 `$DSH_HOME\dsh-fxxk\settings.json`，重装、重启不丢。
+- 两个模式可单独开、也可同时开；开关状态持久化到 `$DSH_HOME\dsh-fuck\settings.json`，重装、重启不丢。
 
 > 本插件只在本机运行，不联网、不上传任何数据；提示词与技能都是本地 md 文件，可随时改。
 
@@ -51,7 +51,7 @@
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Profile tauri
 ```
 
-`install.ps1` 做三件事：先把 profile 的 `package.json`、`pnpm-lock.yaml`、`cordis.patch.yml` 备份到 `<profile>\.dsh-fxxk-backup\<时间戳>\`；再执行 `dsh plugin --profile <p> add <插件目录>`；最后把 `dsh-fxxk` 追加进 `dsh.profile.bundles`。失败自动回滚。卸载用 `scripts\uninstall.ps1`。
+`install.ps1` 做三件事：先把 profile 的 `package.json`、`pnpm-lock.yaml`、`cordis.patch.yml` 备份到 `<profile>\.dsh-fuck-backup\<时间戳>\`；再执行 `dsh plugin --profile <p> add <插件目录>`；最后把 `dsh-fuck` 追加进 `dsh.profile.bundles`。失败自动回滚。卸载用 `scripts\uninstall.ps1`。
 
 > **只跑 `dsh plugin add` 不够**：它只等价于 pnpm add，会写 `dependencies` 和 `node_modules` 链接，但**不会**把包名加进 `dsh.profile.bundles`；没有 bundles 这一层，宿主不会加载插件的 `cordis.patch.yml` 与 client 半侧（本机实测）。
 
@@ -61,7 +61,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Profi
 # 1) 依赖 + 链接
 dsh plugin --profile tauri add "<插件目录>"
 
-# 2) 手动把 "dsh-fxxk" 追加到 <profile>\package.json 的 dsh.profile.bundles 列表末尾
+# 2) 手动把 "dsh-fuck" 追加到 <profile>\package.json 的 dsh.profile.bundles 列表末尾
 ```
 
 路径含空格或中文时务必加引号。装好后：
@@ -73,17 +73,17 @@ dsh plugin --profile tauri add "<插件目录>"
 验证宿主侧是否加载：
 
 ```powershell
-curl.exe -s http://127.0.0.1:3080/dsh-fxxk/api
+curl.exe -s http://127.0.0.1:3080/dsh-fuck/api
 # 期望返回 {"ok":true,"state":{...},"meta":{...}}
 
-curl.exe -s "http://127.0.0.1:3080/dsh-fxxk/api?selftest=1"
+curl.exe -s "http://127.0.0.1:3080/dsh-fuck/api?selftest=1"
 # 期望 {"ok":true,"selftest":{"sectionPresent":true,...}}
 ```
 
 ### 手动检查清单
 
-- `package.json` 的 `name` 为 `dsh-fxxk`，`exports["./client"]` 指向 `client.js`。
-- `cordis.patch.yml` 里有 `dsh-fxxk` 的 insert 行。
+- `package.json` 的 `name` 为 `dsh-fuck`，`exports["./client"]` 指向 `client.js`。
+- `cordis.patch.yml` 里有 `dsh-fuck` 的 insert 行。
 - `prompts/` 与 `skills/` 目录存在且非空。
 
 ## 命令
@@ -146,7 +146,7 @@ IDA 场景说明：本机 IDA 9.3 通过 `ida-pro-mcp` MCP（streamable-http，�
 
 运行时数据：
 
-- 设置：`$DSH_HOME\dsh-fxxk\settings.json`（Windows 默认 `C:\Users\<你>\.dsh\dsh-fxxk\settings.json`）。
+- 设置：`$DSH_HOME\dsh-fuck\settings.json`（Windows 默认 `C:\Users\<你>\.dsh\dsh-fuck\settings.json`）。
 - 损坏的 settings.json 会被备份为 `settings.json.bak-<时间戳>` 并用默认值重建。
 - 插件本身不写宿主 asar、不改 `profiles\tauri` 之外的内容；安装脚本只动当前 profile 的 `package.json` / `cordis.patch.yml`，且先备份。
 
@@ -155,24 +155,24 @@ IDA 场景说明：本机 IDA 9.3 通过 `ida-pro-mcp` MCP（streamable-http，�
 1. **先关开关**：设置面板里关掉「破甲」「逆向」，或 `/dual reset`；提示词与技能立刻停止注入。
 2. **移除插件**：
    ```powershell
-   dsh plugin --profile tauri remove dsh-fxxk
+   dsh plugin --profile tauri remove dsh-fuck
    ```
    或 `powershell -File .\scripts\uninstall.ps1 -Profile tauri`（可配合备份恢复）。
-3. **恢复 profile 备份**（可选）：把 `<profile>\.dsh-fxxk-backup\<时间戳>\` 下的文件复制回 profile 根目录。
-4. **清状态**（可选）：删除 `$DSH_HOME\dsh-fxxk\settings.json`，下次加载恢复默认。
+3. **恢复 profile 备份**（可选）：把 `<profile>\.dsh-fuck-backup\<时间戳>\` 下的文件复制回 profile 根目录。
+4. **清状态**（可选）：删除 `$DSH_HOME\dsh-fuck\settings.json`，下次加载恢复默认。
 5. **彻底删除**：确认插件已从 profile 移除后，删除本插件目录即可。
 
 ## 排错
 
 | 现象 | 排查 |
 | --- | --- |
-| 输入框右侧没有设置图标按钮 | 确认插件已在当前 profile 的 bundle 列表里；重启/刷新页面；看宿主日志 `[dsh-fxxk] mounted` |
-| `GET /dsh-fxxk/api` 404 | 宿主侧未加载或路由未注册；重启 DSH；确认没有第二个进程占用端口 |
+| 输入框右侧没有设置图标按钮 | 确认插件已在当前 profile 的 bundle 列表里；重启/刷新页面；看宿主日志 `[dsh-fuck] mounted` |
+| `GET /dsh-fuck/api` 404 | 宿主侧未加载或路由未注册；重启 DSH；确认没有第二个进程占用端口 |
 | 开关点了但回答没变化 | 破甲/逆向提示词只在「下一次请求」生效；确认状态点与设置面板显示一致；点「重新载入」 |
 | 技能列表为空 | 逆向模式未开；或 `skills/` 扫描失败——检查每个 `SKILL.md` 的 frontmatter 是否为 kebab-case 且与目录名一致 |
 | IDA MCP 工具不可用 | IDA 是否打开目标并加载 MCP 插件；`http://127.0.0.1:13337/mcp` 是否在监听；重启 IDA 后新开会话 |
 | 中文乱码 | 所有 md 文件必须 UTF-8（无 BOM）；用支持 UTF-8 的编辑器保存 |
-| 设置保存失败 | 检查 `$DSH_HOME\dsh-fxxk\` 是否可写；面板错误文案会给出原因 |
+| 设置保存失败 | 检查 `$DSH_HOME\dsh-fuck\` 是否可写；面板错误文案会给出原因 |
 
 ## 验证记录（本机实测）
 
@@ -182,7 +182,7 @@ IDA 场景说明：本机 IDA 9.3 通过 `ida-pro-mcp` MCP（streamable-http，�
 | 静态体检 `node test/check-plugin.mjs` | 31 项 PASS |
 | 客户端 SSR 预览 `node test/client-preview.mjs` | 20 项 PASS |
 | 独立测试 profile 端到端 `scripts\e2e-web.ps1 -Profile dualtest` | **E2E PASS 33/33**，可重复跑；覆盖安装→启动→API→toggle→selftest→9 技能→reset→CDP 断言设置入口→截图→清理 |
-| tauri 主 GUI 实机（3080） | 设置入口显示正常；`GET /dsh-fxxk/api` → `skillsMounted:true`、`skills=9`；`?selftest=1` → `sectionPresent:true`、`sectionChars=4947`、`error:null`；两开关开启/关闭即时生效 |
+| tauri 主 GUI 实机（3080） | 设置入口显示正常；`GET /dsh-fuck/api` → `skillsMounted:true`、`skills=9`；`?selftest=1` → `sectionPresent:true`、`sectionChars=4947`、`error:null`；两开关开启/关闭即时生效 |
 
 实机界面见上方截图；页面关闭测试方式（无头 Edge + CDP 断言）已封装在 `test/e2e-dock.mjs`。
 
@@ -195,7 +195,7 @@ node test/client-preview.mjs   # 用真实 React SSR 渲染 client.js，产出�
 node test/preview-server.mjs  # 本地预览服务 + mock API（默认 127.0.0.1:3097）
 ```
 
-配套的端到端脚本（测试 profile `dualtest`，不碰 `tauri`）：`scripts\e2e-web.ps1`。它自己起测试宿主，等价命令是 `dsh --profile dualtest --port 3099 --no-open`（注意：`--profile` 已选定 profile，不能再追加 `web` 子命令）。页面带 token（stdout 打印 `dsh web: http://127.0.0.1:3099/?token=...`），自定义路由 `/dsh-fxxk/api` 不受 token 门禁。
+配套的端到端脚本（测试 profile `dualtest`，不碰 `tauri`）：`scripts\e2e-web.ps1`。它自己起测试宿主，等价命令是 `dsh --profile dualtest --port 3099 --no-open`（注意：`--profile` 已选定 profile，不能再追加 `web` 子命令）。页面带 token（stdout 打印 `dsh web: http://127.0.0.1:3099/?token=...`），自定义路由 `/dsh-fuck/api` 不受 token 门禁。
 
 ## 免责声明
 
