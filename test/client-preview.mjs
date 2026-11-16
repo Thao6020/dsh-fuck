@@ -46,7 +46,7 @@ function resolveReactRoot() {
     process.env.DSH_FXXK_REACT_ROOT,
     join(homedir(), '.dsh', 'profiles', 'tauri', 'node_modules'),
     join(homedir(), '.dsh', 'profiles', 'node_modules'),
-    join(homedir(), 'Desktop', 'artex-src', 'web', 'node_modules'),
+    join(homedir(), 'Desktop', 'vul', 'artex-src', 'web', 'node_modules'),
     process.env.USERPROFILE ? path.join(process.env.USERPROFILE, 'node_modules').replace(/\\/g, '/') : '',
     ...String(process.env.NODE_PATH || '')
       .split(';')
