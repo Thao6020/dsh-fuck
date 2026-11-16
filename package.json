@@ -1,0 +1,50 @@
+{
+  "name": "dsh-fxxk",
+  "version": "0.1.0",
+  "private": false,
+  "description": "插件设置面板：会话内 GUI 开关「破甲」「逆向」两套模式，动态注入提示词与逆向技能。 / Dual-mode console for DeepSeek Harness: in-conversation toggles for no-refusal and reverse-engineering modes.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "lib",
+    "prompts",
+    "skills",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/host.test.mjs",
+    "preview": "node test/client-preview.mjs && node test/preview-server.mjs"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "reverse-engineering",
+    "red-team"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  }
+}

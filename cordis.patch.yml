@@ -1,0 +1,8 @@
+# dsh-fxxk bundle patch
+#
+# 宿主侧插件入口：index.js（systemPrompt section + /dsh-fxxk/api + 动态 skills）。
+# 客户端半侧由 package.json 的 dsh.client 声明，不需要额外的 loader 行。
+# 会话内的两个开关状态保存在 $DSH_HOME/dsh-fxxk/settings.json，不写这里。
+- insert:
+    - id: dsh-fxxk
+      name: 'dsh-fxxk'

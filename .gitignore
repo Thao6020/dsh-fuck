@@ -1,0 +1,9 @@
+# 本地/临时产物，不入库
+node_modules/
+test/out/
+test/probe/
+_research/
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
